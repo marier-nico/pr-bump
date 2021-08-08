@@ -1,0 +1,17 @@
+[package]
+name = "pr-bump"
+version = "0.1.0"
+authors = ["Nicolas Marier <software@nmarier.com>"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+description = "GitHub action to perform version bumps based on pull requests"
+homepage = "https://github.com/marier-nico/pr-bump"
+repository = "https://github.com/marier-nico/pr-bump"
+readme = "README.md"
+keywords = ["github", "github-action", "ci"]
+
+[dependencies]
+octocrab = "0.9"
+regex = "1"
+semver = "1"
+tokio = { version = "1", features = ["full"] }
