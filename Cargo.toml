@@ -10,7 +10,18 @@ repository = "https://github.com/marier-nico/pr-bump"
 readme = "README.md"
 keywords = ["github", "github-action", "ci"]
 
+[lib]
+name = "pr_bump_lib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "pr_bump_bin"
+path = "src/main.rs"
+
 [dependencies]
+async-trait = "0.1"
+chrono = "0.4"
+eyre = "0.6"
 octocrab = "0.9"
 regex = "1"
 semver = "1"
