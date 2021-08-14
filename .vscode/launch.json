@@ -7,15 +7,34 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'pr-bump'",
+            "name": "Debug unit tests in library 'pr_bump_lib'",
             "cargo": {
                 "args": [
-                    "build",
-                    "--bin=pr-bump",
+                    "test",
+                    "--no-run",
+                    "--lib",
                     "--package=pr-bump"
                 ],
                 "filter": {
-                    "name": "pr-bump",
+                    "name": "pr_bump_lib",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'pr_bump_bin'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=pr_bump_bin",
+                    "--package=pr-bump"
+                ],
+                "filter": {
+                    "name": "pr_bump_bin",
                     "kind": "bin"
                 }
             },
@@ -25,17 +44,36 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'pr-bump'",
+            "name": "Debug unit tests in executable 'pr_bump_bin'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
-                    "--bin=pr-bump",
+                    "--bin=pr_bump_bin",
                     "--package=pr-bump"
                 ],
                 "filter": {
-                    "name": "pr-bump",
+                    "name": "pr_bump_bin",
                     "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'integration_tests'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=integration_tests",
+                    "--package=pr-bump"
+                ],
+                "filter": {
+                    "name": "integration_tests",
+                    "kind": "test"
                 }
             },
             "args": [],

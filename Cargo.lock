@@ -716,6 +716,8 @@ dependencies = [
  "octocrab",
  "regex",
  "semver",
+ "serde",
+ "serde_json",
  "tokio",
 ]
 

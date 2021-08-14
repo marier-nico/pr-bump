@@ -7,6 +7,7 @@ pub use github::{GitHub, LocalGitHub, PullRequest, Release};
 use regex::Regex;
 use semver::Version;
 
+mod config;
 mod bump_version;
 mod github;
 
@@ -14,7 +15,7 @@ pub async fn get_next_version(github: impl GitHubOperations) -> Result<Version> 
     let latest_releasse = github.get_latest_release().await?;
 
     let eligible_pulls = github
-        .get_pulls_after("main", latest_releasse.clone())
+        .get_pulls_after(Some(vec!["main".to_string()]), latest_releasse.clone())
         .await?;
     let next_version = bump_version(&latest_releasse.get_version()?, eligible_pulls);
 

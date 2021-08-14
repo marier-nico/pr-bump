@@ -1,13 +1,37 @@
-use std::sync::Arc;
+use std::{iter, sync::Arc};
 
 use async_trait::async_trait;
 use chrono::{DateTime, TimeZone, Utc};
 use eyre::{eyre, Result};
 use octocrab::{
     params::{pulls::Sort, State},
+    pulls::ListPullRequestsBuilder,
     Octocrab,
 };
 use semver::Version;
+
+#[derive(Debug)]
+enum GitHubError {
+    NotFound,
+    Other(eyre::Error),
+}
+
+impl From<octocrab::Error> for GitHubError {
+    fn from(value: octocrab::Error) -> Self {
+        if let octocrab::Error::GitHub {
+            source,
+            backtrace: _,
+        } = value
+        {
+            match source.message.as_str() {
+                "Not Found" => return GitHubError::NotFound,
+                _ => return GitHubError::Other(eyre!(source.message)),
+            }
+        }
+
+        GitHubError::Other(eyre!(value.to_string()))
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct PullRequest {
@@ -59,11 +83,16 @@ impl Default for Release {
     }
 }
 
+pub type Branch = String;
 #[async_trait(?Send)]
 pub trait GitHubOperations {
     type PullIter: Iterator<Item = PullRequest>;
 
-    async fn get_pulls_after(&self, base: &str, release: Release) -> Result<Self::PullIter>;
+    async fn get_pulls_after(
+        &self,
+        bases: Option<Vec<Branch>>,
+        release: Release,
+    ) -> Result<Self::PullIter>;
     async fn get_latest_release(&self) -> Result<Release>;
 }
 
@@ -88,18 +117,27 @@ impl GitHub {
 impl GitHubOperations for GitHub {
     type PullIter = Box<dyn Iterator<Item = PullRequest>>;
 
-    async fn get_pulls_after(&self, base: &str, release: Release) -> Result<Self::PullIter> {
+    async fn get_pulls_after(
+        &self,
+        base: Option<Vec<Branch>>,
+        release: Release,
+    ) -> Result<Self::PullIter> {
         let pulls = self
             .octocrab
             .pulls(&self.owner, &self.repo)
             .list()
             .state(State::Closed)
-            .base(base)
             .sort(Sort::Created)
+            .per_page(100)
             .send()
             .await?;
 
-        let simplified = pulls.into_iter().map(|p| {
+        let eligible = pulls
+            .into_iter()
+            .filter(move |pr| pr.merged_at.is_some() && pr.merged_at.unwrap() > release.created_at)
+            .filter(|pr| base.is_none() || base.as_ref().unwrap().contains(&pr.base.label));
+
+        let simplified: Vec<PullRequest> = eligible.into_iter().map(|p| {
             let labels = p
                 .labels
                 .unwrap_or_default()
@@ -108,12 +146,10 @@ impl GitHubOperations for GitHub {
                 .collect();
 
             PullRequest::new(labels, p.merged_at)
-        });
+        })
+        .collect(); // We collect to avoid cloning `base` to get eligible PRs
 
-        let released_after = simplified
-            .filter(move |p| p.merged_at.is_some() && p.merged_at.unwrap() > release.created_at);
-
-        Ok(Box::new(released_after))
+        Ok(Box::new(simplified.into_iter()))
     }
 
     async fn get_latest_release(&self) -> Result<Release> {
@@ -126,7 +162,10 @@ impl GitHubOperations for GitHub {
 
         let simplified = match latest_release {
             Ok(rel) => Release::new(rel.tag_name, rel.created_at),
-            Err(_) => Release::default(),
+            Err(e) => match GitHubError::from(e) {
+                GitHubError::NotFound => Release::default(),
+                GitHubError::Other(e) => return Err(e),
+            },
         };
 
         Ok(simplified)
@@ -166,7 +205,11 @@ impl Default for LocalGitHub {
 impl GitHubOperations for LocalGitHub {
     type PullIter = Box<dyn Iterator<Item = PullRequest>>;
 
-    async fn get_pulls_after(&self, _base: &str, release: Release) -> Result<Self::PullIter> {
+    async fn get_pulls_after(
+        &self,
+        _base: Option<Vec<Branch>>,
+        release: Release,
+    ) -> Result<Self::PullIter> {
         Ok(Box::new(self.pulls.clone().into_iter().filter(move |pr| {
             pr.merged_at.unwrap() > release.created_at
         })))

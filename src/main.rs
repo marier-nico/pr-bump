@@ -18,7 +18,7 @@ use pr_bump_lib::GitHub;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let github = GitHub::new("marier-nico", "venv-wrapper");
+    let github = GitHub::new("marier-nico", "event-processor");
 
     let next_version = get_next_version(github).await?;
 
