@@ -1,15 +1,26 @@
-use std::fs;
+use std::{convert::TryFrom, fs, path::Path};
 
+use actions_config::ActionConfig;
 use bump_version::bump_version;
 use eyre::Result;
 use github::GitHubOperations;
 pub use github::{GitHub, LocalGitHub, PullRequest, Release};
+pub use pr_bump_config::PrBumpConfig;
 use regex::Regex;
 use semver::Version;
 
-mod config;
+mod actions_config;
 mod bump_version;
 mod github;
+mod pr_bump_config;
+
+pub fn load_action_config() -> Result<ActionConfig> {
+    ActionConfig::try_from_env()
+}
+
+pub fn load_pr_bump_config(config_path: &Path) -> Result<PrBumpConfig> {
+    PrBumpConfig::try_from(config_path)
+}
 
 pub async fn get_next_version(github: impl GitHubOperations) -> Result<Version> {
     let latest_releasse = github.get_latest_release().await?;

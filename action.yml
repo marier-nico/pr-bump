@@ -1,0 +1,14 @@
+name: "PR Bump"
+description: "Bump versions based on PR labels and GitHub releases"
+inputs:
+  configuration:
+    description: "Relative path to the configuration file for pr-bump"
+    required: false
+outputs:
+  previous-version:
+    description: "The repository's latest version before the bump"
+  new-version:
+    description: "The reporitosy's new version after the bump"
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

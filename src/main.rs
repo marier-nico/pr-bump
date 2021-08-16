@@ -4,10 +4,7 @@ use pr_bump_lib::GitHub;
 
 // TODO:
 // - Setup configuration (with serde_json and a config struct)
-//   - Allow choosing which files to update the version number in
-//   - Allow choosing which labels correspond to what version bump (e.g. link `fix` to `patch` and `breaking` to `major`)
-//   - Allow choosing which base branch a PR needs to point to for it to be picked up
-// - Get the repo and owner automatically (github actions env vars?)
+// - Use GitHub secret token (to work with private repos)
 // - Add docs to relevant public functions
 // - Make sure the repo defines a valid action (https://docs.github.com/en/actions/creating-actions/creating-a-docker-container-action)
 //   - Create the config file, the inputs, etc.
