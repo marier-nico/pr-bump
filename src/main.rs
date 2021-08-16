@@ -1,5 +1,7 @@
 use eyre::Result;
 use pr_bump_lib::get_next_version;
+use pr_bump_lib::load_action_config;
+use pr_bump_lib::load_pr_bump_config;
 use pr_bump_lib::GitHub;
 use pr_bump_lib::PrBumpConfig;
 
@@ -15,13 +17,23 @@ use pr_bump_lib::PrBumpConfig;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    let action_config = load_action_config()?;
+    let pr_bump_config = {
+        if let Some(config) = action_config.configuration_file {
+            let file_config = action_config.workspace.join(config);
+            load_pr_bump_config(&file_config)?.merge(PrBumpConfig::default())
+        } else {
+            PrBumpConfig::default()
+        }
+    };
+
     let github = GitHub::new(
-        "marier-nico",
-        "pr-bump-tests",
-        Some("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"),
+        &action_config.repo.owner,
+        &action_config.repo.repo,
+        action_config.github_token,
     )?;
 
-    let next_version = get_next_version(github, PrBumpConfig::default()).await?;
+    let next_version = get_next_version(github, pr_bump_config).await?;
 
     println!("Next version: {}", next_version);
     /*if latest_releasse.get_version()? != next_version {

@@ -100,10 +100,10 @@ pub struct GitHub {
 }
 
 impl GitHub {
-    pub fn new(owner: &str, repo: &str, token: Option<&str>) -> Result<Self> {
+    pub fn new(owner: &str, repo: &str, token: Option<String>) -> Result<Self> {
         let mut octocrab_builder = Octocrab::builder();
         if let Some(token) = token {
-            octocrab_builder = octocrab_builder.personal_token(token.to_string());
+            octocrab_builder = octocrab_builder.personal_token(token);
         }
 
         octocrab::initialise(octocrab_builder).wrap_err("Could not initialize GitHub SDK")?;

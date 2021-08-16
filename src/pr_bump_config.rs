@@ -43,7 +43,7 @@ pub struct PrBumpConfig {
 }
 
 impl PrBumpConfig {
-    pub fn merge(&mut self, other: Self) {
+    pub fn merge(mut self, other: Self) -> Self {
         if self.base_branches.is_none() {
             self.base_branches = other.base_branches;
         }
@@ -55,6 +55,8 @@ impl PrBumpConfig {
         if self.categories.is_none() {
             self.categories = other.categories
         }
+
+        self
     }
 }
 
