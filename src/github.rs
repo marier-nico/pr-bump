@@ -1,11 +1,10 @@
-use std::{iter, sync::Arc};
+use std::sync::Arc;
 
 use async_trait::async_trait;
 use chrono::{DateTime, TimeZone, Utc};
-use eyre::{eyre, Result};
+use eyre::{eyre, Context, Result};
 use octocrab::{
-    params::{pulls::Sort, State},
-    pulls::ListPullRequestsBuilder,
+    params::{Direction, State},
     Octocrab,
 };
 use semver::Version;
@@ -104,12 +103,19 @@ pub struct GitHub {
 }
 
 impl GitHub {
-    pub fn new(owner: &str, repo: &str) -> Self {
-        GitHub {
+    pub fn new(owner: &str, repo: &str, token: Option<&str>) -> Result<Self> {
+        let mut octocrab_builder = Octocrab::builder();
+        if let Some(token) = token {
+            octocrab_builder = octocrab_builder.personal_token(token.to_string());
+        }
+
+        octocrab::initialise(octocrab_builder).wrap_err("Could not initialize GitHub SDK")?;
+
+        Ok(GitHub {
             owner: owner.to_string(),
             repo: repo.to_string(),
             octocrab: octocrab::instance(),
-        }
+        })
     }
 }
 
@@ -119,7 +125,7 @@ impl GitHubOperations for GitHub {
 
     async fn get_pulls_after(
         &self,
-        base: Option<Vec<Branch>>,
+        bases: Option<Vec<Branch>>,
         release: Release,
     ) -> Result<Self::PullIter> {
         let pulls = self
@@ -127,27 +133,38 @@ impl GitHubOperations for GitHub {
             .pulls(&self.owner, &self.repo)
             .list()
             .state(State::Closed)
-            .sort(Sort::Created)
             .per_page(100)
             .send()
             .await?;
-
+        
         let eligible = pulls
             .into_iter()
             .filter(move |pr| pr.merged_at.is_some() && pr.merged_at.unwrap() > release.created_at)
-            .filter(|pr| base.is_none() || base.as_ref().unwrap().contains(&pr.base.label));
+            .filter(|pr| {
+                let pr_base = pr
+                    .base
+                    .label
+                    .split(':')
+                    .last()
+                    .unwrap_or_else(|| panic!("Unexpected format for PR base: '{}'", pr.base.label));
+                
+                println!("#{} [{:?}] {} -> {}", pr.number, pr.merged_at, pr.title, pr_base);
+                bases.is_none() || bases.as_ref().unwrap().contains(&pr_base.to_owned())
+            });
 
-        let simplified: Vec<PullRequest> = eligible.into_iter().map(|p| {
-            let labels = p
-                .labels
-                .unwrap_or_default()
-                .iter()
-                .map(|l| l.name.clone())
-                .collect();
+        let simplified: Vec<PullRequest> = eligible
+            .into_iter()
+            .map(|p| {
+                let labels = p
+                    .labels
+                    .unwrap_or_default()
+                    .iter()
+                    .map(|l| l.name.clone())
+                    .collect();
 
-            PullRequest::new(labels, p.merged_at)
-        })
-        .collect(); // We collect to avoid cloning `base` to get eligible PRs
+                PullRequest::new(labels, p.merged_at)
+            })
+            .collect(); // We collect to avoid cloning `bases` for every PR
 
         Ok(Box::new(simplified.into_iter()))
     }

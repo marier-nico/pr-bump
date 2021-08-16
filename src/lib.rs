@@ -22,11 +22,11 @@ pub fn load_pr_bump_config(config_path: &Path) -> Result<PrBumpConfig> {
     PrBumpConfig::try_from(config_path)
 }
 
-pub async fn get_next_version(github: impl GitHubOperations) -> Result<Version> {
+pub async fn get_next_version(github: impl GitHubOperations, config: PrBumpConfig) -> Result<Version> {
     let latest_releasse = github.get_latest_release().await?;
 
     let eligible_pulls = github
-        .get_pulls_after(Some(vec!["main".to_string()]), latest_releasse.clone())
+        .get_pulls_after(config.base_branches, latest_releasse.clone())
         .await?;
     let next_version = bump_version(&latest_releasse.get_version()?, eligible_pulls);
 

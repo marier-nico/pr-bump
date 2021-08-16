@@ -94,6 +94,7 @@ impl Default for PrBumpConfig {
                 ),
                 Category::new(
                     vec![
+                        "enhancement".to_string(),
                         "feat".to_string(),
                         "feature".to_string(),
                         "minor".to_string(),

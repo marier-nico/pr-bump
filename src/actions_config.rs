@@ -5,6 +5,7 @@ pub struct ActionConfig {
     pub repo: Repo,
     pub workspace: PathBuf,
     pub configuration_file: Option<PathBuf>,
+    pub github_token: Option<String>,
 }
 
 pub struct Repo {
@@ -45,6 +46,7 @@ impl ActionConfig {
             repo: Repo::try_from_env()?,
             workspace: workspace_path,
             configuration_file,
+            github_token: env::var("GITHUB_TOKEN").ok(),
         })
     }
 }

@@ -1,4 +1,4 @@
-use pr_bump_lib::{self, get_next_version, LocalGitHub, PullRequest, Release};
+use pr_bump_lib::{self, LocalGitHub, PrBumpConfig, PullRequest, Release, get_next_version};
 
 mod utils;
 use semver::Version;
@@ -13,7 +13,7 @@ async fn fix_pr_bumps_patch_number() {
         Some(ymd_midnight(2021, 1, 2)),
     ));
 
-    let next_version = get_next_version(gh).await.unwrap();
+    let next_version = get_next_version(gh, PrBumpConfig::default()).await.unwrap();
 
     assert_eq!(next_version, Version::new(1, 2, 4));
 }
@@ -27,7 +27,7 @@ async fn feature_pr_bumps_minor_number() {
         Some(ymd_midnight(2021, 1, 2)),
     ));
 
-    let next_version = get_next_version(gh).await.unwrap();
+    let next_version = get_next_version(gh, PrBumpConfig::default()).await.unwrap();
 
     assert_eq!(next_version, Version::new(1, 3, 0));
 }
@@ -41,7 +41,7 @@ async fn breaking_pr_bumps_major_number() {
         Some(ymd_midnight(2021, 1, 2)),
     ));
 
-    let next_version = get_next_version(gh).await.unwrap();
+    let next_version = get_next_version(gh, PrBumpConfig::default()).await.unwrap();
 
     assert_eq!(next_version, Version::new(2, 0, 0));
 }
@@ -51,7 +51,7 @@ async fn no_new_prs_does_not_bump() {
     let mut gh = LocalGitHub::default();
     gh.add_release(Release::new("1.2.3".to_string(), ymd_midnight(2021, 1, 1)));
 
-    let next_version = get_next_version(gh).await.unwrap();
+    let next_version = get_next_version(gh, PrBumpConfig::default()).await.unwrap();
 
     assert_eq!(next_version, Version::new(1, 2, 3));
 }
@@ -65,7 +65,7 @@ async fn prs_merged_before_latest_release_do_not_bump() {
         Some(ymd_midnight(2020, 1, 1)),
     ));
 
-    let next_version = get_next_version(gh).await.unwrap();
+    let next_version = get_next_version(gh, PrBumpConfig::default()).await.unwrap();
 
     assert_eq!(next_version, Version::new(1, 2, 3));
 }
@@ -76,7 +76,7 @@ async fn prs_with_no_labels_do_not_bump() {
     gh.add_release(Release::new("1.2.3".to_string(), ymd_midnight(2021, 1, 1)));
     gh.add_pull(PullRequest::new(vec![], Some(ymd_midnight(2020, 1, 1))));
 
-    let next_version = get_next_version(gh).await.unwrap();
+    let next_version = get_next_version(gh, PrBumpConfig::default()).await.unwrap();
 
     assert_eq!(next_version, Version::new(1, 2, 3));
 }
@@ -90,7 +90,7 @@ async fn pr_with_random_label_does_not_bump() {
         Some(ymd_midnight(2021, 1, 2)),
     ));
 
-    let next_version = get_next_version(gh).await.unwrap();
+    let next_version = get_next_version(gh, PrBumpConfig::default()).await.unwrap();
 
     assert_eq!(next_version, Version::new(1, 2, 3));
 }
@@ -107,7 +107,7 @@ async fn pr_with_one_relevant_label_and_one_random_label_bumps() {
         Some(ymd_midnight(2021, 1, 2)),
     ));
 
-    let next_version = get_next_version(gh).await.unwrap();
+    let next_version = get_next_version(gh, PrBumpConfig::default()).await.unwrap();
 
     assert_eq!(next_version, Version::new(2, 0, 0));
 }
@@ -125,7 +125,7 @@ async fn pr_with_multiple_valid_labels_bumps_the_biggest_part() {
         Some(ymd_midnight(2021, 1, 2)),
     ));
 
-    let next_version = get_next_version(gh).await.unwrap();
+    let next_version = get_next_version(gh, PrBumpConfig::default()).await.unwrap();
 
     assert_eq!(next_version, Version::new(2, 0, 0));
 }
@@ -139,7 +139,7 @@ async fn pr_with_multiple_identical_labels_only_bumps_once() {
         Some(ymd_midnight(2021, 1, 2)),
     ));
 
-    let next_version = get_next_version(gh).await.unwrap();
+    let next_version = get_next_version(gh, PrBumpConfig::default()).await.unwrap();
 
     assert_eq!(next_version, Version::new(1, 2, 4));
 }
