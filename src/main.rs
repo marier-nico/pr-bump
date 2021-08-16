@@ -1,7 +1,7 @@
 use eyre::Result;
-use pr_bump_lib::PrBumpConfig;
 use pr_bump_lib::get_next_version;
 use pr_bump_lib::GitHub;
+use pr_bump_lib::PrBumpConfig;
 
 // TODO:
 // - Setup configuration (with serde_json and a config struct)
@@ -15,7 +15,11 @@ use pr_bump_lib::GitHub;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let github = GitHub::new("marier-nico", "pr-bump-tests", Some("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"))?;
+    let github = GitHub::new(
+        "marier-nico",
+        "pr-bump-tests",
+        Some("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"),
+    )?;
 
     let next_version = get_next_version(github, PrBumpConfig::default()).await?;
 

@@ -1,4 +1,4 @@
-use std::{env, path::PathBuf};
+use std::env;
 
 use chrono::{DateTime, TimeZone, Utc};
 use std::io::Write;
@@ -21,16 +21,14 @@ pub fn write_tmp_file(file_content: &str) -> NamedTempFile {
 }
 
 pub struct TestEnvVar<'a> {
-    key: &'a str
+    key: &'a str,
 }
 
 impl<'a> TestEnvVar<'a> {
     pub fn new(key: &'a str, value: &str) -> Self {
         env::set_var(key, value);
 
-        TestEnvVar {
-            key
-        }
+        TestEnvVar { key }
     }
 }
 

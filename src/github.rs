@@ -3,10 +3,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use chrono::{DateTime, TimeZone, Utc};
 use eyre::{eyre, Context, Result};
-use octocrab::{
-    params::{Direction, State},
-    Octocrab,
-};
+use octocrab::{params::State, Octocrab};
 use semver::Version;
 
 #[derive(Debug)]
@@ -136,19 +133,19 @@ impl GitHubOperations for GitHub {
             .per_page(100)
             .send()
             .await?;
-        
+
         let eligible = pulls
             .into_iter()
             .filter(move |pr| pr.merged_at.is_some() && pr.merged_at.unwrap() > release.created_at)
             .filter(|pr| {
-                let pr_base = pr
-                    .base
-                    .label
-                    .split(':')
-                    .last()
-                    .unwrap_or_else(|| panic!("Unexpected format for PR base: '{}'", pr.base.label));
-                
-                println!("#{} [{:?}] {} -> {}", pr.number, pr.merged_at, pr.title, pr_base);
+                let pr_base = pr.base.label.split(':').last().unwrap_or_else(|| {
+                    panic!("Unexpected format for PR base: '{}'", pr.base.label)
+                });
+
+                println!(
+                    "#{} [{:?}] {} -> {}",
+                    pr.number, pr.merged_at, pr.title, pr_base
+                );
                 bases.is_none() || bases.as_ref().unwrap().contains(&pr_base.to_owned())
             });
 

@@ -1,4 +1,4 @@
-use pr_bump_lib::{self, LocalGitHub, PrBumpConfig, PullRequest, Release, get_next_version};
+use pr_bump_lib::{self, get_next_version, LocalGitHub, PrBumpConfig, PullRequest, Release};
 
 mod utils;
 use semver::Version;
