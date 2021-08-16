@@ -1,3 +1,4 @@
+#![allow(dead_code)] // The code is used in tests
 use std::env;
 
 use chrono::{DateTime, TimeZone, Utc};
