@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
 
 use eyre::Result;
-use pr_bump_lib::{get_latest_release, get_next_version, get_pulls, GitHub};
+use pr_bump_lib::{get_latest_release, get_next_version, get_pulls, update_file, GitHub};
 
 use crate::{actions_config::ActionConfig, pr_bump_config::PrBumpConfig};
 mod actions_config;
@@ -9,6 +9,7 @@ mod pr_bump_config;
 
 // TODO:
 // - Add docs to relevant public functions
+// - Add printing or logs to give info on the action execution
 // - Make sure the repo defines a valid action (https://docs.github.com/en/actions/creating-actions/creating-a-docker-container-action)
 //   - Create the config file, the inputs, etc.
 // - Make the README up to stuff, list all the inputs and outputs
@@ -16,6 +17,7 @@ mod pr_bump_config;
 //   - Give examples of how to use stand-alone
 // - (For the function to update the version in files), use any `Write` instead of a path to allow in-memory testing, or maybe just take a string slice and return a modified String
 // - hook up action outputs with those defined in `action.yml`
+// - Make sure everything here is done https://docs.github.com/en/actions/creating-actions/creating-a-docker-container-action#introduction
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -52,18 +54,16 @@ async fn main() -> Result<()> {
         pulls,
     );
 
-    println!("Next version: {}", next_version);
-    // TODO: Bump in files
+    for bump_file in &pr_bump_config.bump_files.unwrap() {
+        let full_path = &action_config.workspace.join(&bump_file.path);
 
-    /*if latest_releasse.get_version()? != next_version {
-        println!("New version: {}", next_version);
-        bump_version_in_file(
-            "/home/nmarier/Documents/Software/Projects/venv-wrapper/Cargo.toml",
-            "version = \"",
-            &latest_releasse.get_version()?,
+        update_file(
+            &latest.get_version()?,
             &next_version,
+            &bump_file.prefix,
+            &full_path,
         )?;
-    }*/
-    
+    }
+
     Ok(())
 }

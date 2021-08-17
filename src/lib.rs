@@ -1,5 +1,7 @@
-use bump_version::bump_version;
+use std::path::Path;
+
 pub use bump_version::BumpRules;
+use bump_version::{bump_in_file, bump_version};
 use chrono::{DateTime, Utc};
 use eyre::{Context, Result};
 use github::GitHubOperations;
@@ -48,19 +50,11 @@ pub fn get_next_version(
 // The prefix is what comes immediately before the version number and is not a regex.
 // For example, to bump `Cargo.toml`, `prefix` could be `version = \"`. This is just
 // to make sure only the correct thing is bumped and not another random version number.
-/*fn bump_files(
-    bump_config: &PrBumpConfig,
-    action_contig: &ActionConfig,
-    old_version: &Version,
-    new_version: &Version,
+pub fn update_file(
+    current_version: &Version,
+    next_version: &Version,
+    version_prefix: &str,
+    file_path: &Path,
 ) -> Result<()> {
-    todo!();
-    let file = fs::read_to_string(path)?;
-
-    let re = Regex::new(&format!("{}{}", prefix, old_version)).unwrap();
-    let replaced = re.replace(&file, format!("{}{}", prefix, new_version.to_string()));
-
-    fs::write(path, replaced.as_ref())?;
-
-    Ok(())
-}*/
+    bump_in_file(current_version, next_version, version_prefix, file_path)
+}

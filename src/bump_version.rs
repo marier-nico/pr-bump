@@ -1,4 +1,6 @@
-use std::collections::HashSet;
+use eyre::Result;
+use regex::Regex;
+use std::{collections::HashSet, fs, path::Path};
 
 use semver::Version;
 
@@ -94,4 +96,20 @@ pub fn bump_version(
     }
 
     next_version
+}
+
+pub fn bump_in_file(
+    current_version: &Version,
+    next_version: &Version,
+    version_prefix: &str,
+    file_path: &Path,
+) -> Result<()> {
+    let contents = fs::read_to_string(file_path)?;
+
+    let re = Regex::new(&format!("{}{}", version_prefix, current_version)).unwrap();
+    let replaced = re.replace(&contents, format!("{}{}", version_prefix, next_version));
+
+    fs::write(file_path, replaced.as_ref())?;
+
+    Ok(())
 }
