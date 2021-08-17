@@ -79,16 +79,17 @@ impl Default for Release {
     }
 }
 
-pub type Branch = String;
 #[async_trait(?Send)]
 pub trait GitHubOperations {
     type PullIter: Iterator<Item = PullRequest>;
 
-    async fn get_pulls_after(
+    async fn get_pulls<'a, Branch>(
         &self,
-        bases: Option<Vec<Branch>>,
-        release: Release,
-    ) -> Result<Self::PullIter>;
+        bases: Option<impl Iterator<Item = Branch> + 'async_trait>,
+        merged_after: &DateTime<Utc>,
+    ) -> Result<Self::PullIter>
+    where
+        Branch: AsRef<str>;
     async fn get_latest_release(&self) -> Result<Release>;
 }
 
@@ -120,11 +121,14 @@ impl GitHub {
 impl GitHubOperations for GitHub {
     type PullIter = Box<dyn Iterator<Item = PullRequest>>;
 
-    async fn get_pulls_after(
+    async fn get_pulls<'a, Branch>(
         &self,
-        bases: Option<Vec<Branch>>,
-        release: Release,
-    ) -> Result<Self::PullIter> {
+        mut bases: Option<impl Iterator<Item = Branch> + 'async_trait>,
+        merged_after: &DateTime<Utc>,
+    ) -> Result<Self::PullIter>
+    where
+        Branch: AsRef<str>,
+    {
         let pulls = self
             .octocrab
             .pulls(&self.owner, &self.repo)
@@ -136,17 +140,13 @@ impl GitHubOperations for GitHub {
 
         let eligible = pulls
             .into_iter()
-            .filter(move |pr| pr.merged_at.is_some() && pr.merged_at.unwrap() > release.created_at)
+            .filter(move |pr| pr.merged_at.is_some() && &pr.merged_at.unwrap() > merged_after)
             .filter(|pr| {
                 let pr_base = pr.base.label.split(':').last().unwrap_or_else(|| {
                     panic!("Unexpected format for PR base: '{}'", pr.base.label)
                 });
 
-                println!(
-                    "#{} [{:?}] {} -> {}",
-                    pr.number, pr.merged_at, pr.title, pr_base
-                );
-                bases.is_none() || bases.as_ref().unwrap().contains(&pr_base.to_owned())
+                bases.is_none() || bases.as_mut().unwrap().any(|base| base.as_ref() == pr_base)
             });
 
         let simplified: Vec<PullRequest> = eligible
@@ -219,14 +219,21 @@ impl Default for LocalGitHub {
 impl GitHubOperations for LocalGitHub {
     type PullIter = Box<dyn Iterator<Item = PullRequest>>;
 
-    async fn get_pulls_after(
+    async fn get_pulls<'a, Branch>(
         &self,
-        _base: Option<Vec<Branch>>,
-        release: Release,
-    ) -> Result<Self::PullIter> {
-        Ok(Box::new(self.pulls.clone().into_iter().filter(move |pr| {
-            pr.merged_at.unwrap() > release.created_at
-        })))
+        _base: Option<impl Iterator<Item = Branch> + 'async_trait>,
+        merged_after: &DateTime<Utc>,
+    ) -> Result<Self::PullIter>
+    where
+        Branch: AsRef<str>,
+    {
+        let merged_after = *merged_after; // Copy
+        Ok(Box::new(
+            self.pulls
+                .clone()
+                .into_iter()
+                .filter(move |pr| pr.merged_at.unwrap() > merged_after),
+        ))
     }
 
     async fn get_latest_release(&self) -> Result<Release> {

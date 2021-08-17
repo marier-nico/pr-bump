@@ -5,9 +5,8 @@ use std::{
 };
 
 use eyre::Context;
+use pr_bump_lib::BumpRules;
 use serde::Deserialize;
-
-use crate::github::Branch;
 
 type Label = String;
 #[derive(Deserialize, Debug)]
@@ -36,9 +35,17 @@ impl Category {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct BumpFile {
+    pub path: PathBuf,
+
+    #[serde(default)]
+    pub prefix: String,
+}
+
+#[derive(Deserialize, Debug)]
 pub struct PrBumpConfig {
-    pub base_branches: Option<Vec<Branch>>,
-    pub bump_files: Option<Vec<PathBuf>>,
+    pub base_branches: Option<Vec<String>>,
+    pub bump_files: Option<Vec<BumpFile>>,
     pub categories: Option<Vec<Category>>,
 }
 
@@ -57,6 +64,22 @@ impl PrBumpConfig {
         }
 
         self
+    }
+
+    pub fn get_bump_rules(&self) -> BumpRules {
+        let mut rules = BumpRules::new();
+
+        if let Some(categories) = self.categories.as_ref() {
+            for category in categories {
+                match category.semver_part {
+                    SemverPart::Patch => rules.add_patch_labels(category.labels.clone()),
+                    SemverPart::Minor => rules.add_minor_labels(category.labels.clone()),
+                    SemverPart::Major => rules.add_major_labels(category.labels.clone()),
+                }
+            }
+        }
+
+        rules
     }
 }
 
