@@ -1,5 +1,8 @@
 name: "PR Bump"
 description: "Bump versions based on PR labels and GitHub releases"
+branding:
+  icon: "target"
+  color: "green"
 inputs:
   configuration:
     description: "Relative path to the configuration file for pr-bump"
