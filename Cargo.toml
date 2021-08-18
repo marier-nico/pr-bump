@@ -23,7 +23,7 @@ async-trait = "0.1"
 chrono = "0.4"
 dotenv = "0.15"
 eyre = "0.6"
-octocrab = "0.9"
+octocrab = "0.12"
 regex = "1"
 semver = "1"
 serde = { version = "1", features = ["derive"] }

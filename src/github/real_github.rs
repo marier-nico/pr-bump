@@ -2,7 +2,7 @@ use super::{error::GitHubError, GitHubOperations};
 use crate::{PullRequest, Release};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
-use eyre::{Context, Result};
+use eyre::{eyre, Context, Result};
 use octocrab::{params::State, Octocrab};
 use std::sync::Arc;
 
@@ -88,7 +88,10 @@ impl GitHubOperations for GitHub {
             .await;
 
         let simplified = match latest_release {
-            Ok(rel) => Release::new(rel.tag_name, rel.created_at),
+            Ok(rel) => match rel.created_at {
+                Some(created_at) => Release::new(rel.tag_name, created_at),
+                None => return Err(eyre!("The latest release seems to have no creation date")),
+            },
             Err(e) => match GitHubError::from(e) {
                 GitHubError::NotFound => Release::default(),
                 GitHubError::Other(e) => return Err(e),
