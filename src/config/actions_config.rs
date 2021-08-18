@@ -42,9 +42,17 @@ impl ActionConfig {
         let workspace_path = PathBuf::from(workspace_path);
 
         info!("Reading value for INPUT_CONFIGURATION");
-        let configuration_file = env::var("INPUT_CONFIGURATION")
-            .ok()
-            .map(|c| workspace_path.join(c));
+        let configuration_file = env::var("INPUT_CONFIGURATION").ok();
+        let configuration_file = match configuration_file {
+            Some(value) => {
+                if value.is_empty() {
+                    None
+                } else {
+                    Some(workspace_path.join(value))
+                }
+            }
+            None => None,
+        };
 
         info!("Reading value for GITHUB_TOKEN");
         let github_token = env::var("GITHUB_TOKEN").ok();
