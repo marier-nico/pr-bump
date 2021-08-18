@@ -1,0 +1,48 @@
+{
+    "ignore_labels": [
+        "no changelog"
+    ],
+    "categories": [
+        {
+            "title": "## 🐛 Fixes",
+            "labels": [
+                "bug",
+                "fix",
+                "patch"
+            ],
+            "semver_part": "patch"
+        },
+        {
+            "title": "## 📜 Docs",
+            "labels": [
+                "docs",
+                "documentation"
+            ],
+            "semver_part": "patch"
+        },
+        {
+            "title": "## 🚀 Features",
+            "labels": [
+                "enhancement",
+                "feat",
+                "feature",
+                "minor"
+            ],
+            "semver_part": "minor"
+        },
+        {
+            "title": "## 💥 Breaking",
+            "labels": [
+                "breaking",
+                "major"
+            ],
+            "semver_part": "major"
+        }
+    ],
+    "bump_files": [
+      {
+        "path": "Cargo.toml",
+        "prefix": "version = \""
+      }
+    ]
+}
