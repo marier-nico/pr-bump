@@ -1,4 +1,5 @@
 use eyre::Result;
+use log::info;
 use regex::Regex;
 use std::{collections::HashSet, fs, path::Path};
 
@@ -13,7 +14,7 @@ pub struct BumpRules {
     major_bump_labels: HashSet<Label>,
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
 enum BumpLevel {
     Patch,
     Minor,
@@ -73,12 +74,15 @@ pub fn bump_version(
 ) -> Version {
     let mut next_version = current_version.clone();
 
+    info!("Looking at all pull request labels");
     let bump_level = pulls
         .flat_map(|pr| pr.labels.into_iter())
         .flat_map(|label| rules.label_into_level(label))
         .max();
 
     if let Some(level) = bump_level {
+        info!("Version bump required: {:?}", level);
+
         match level {
             BumpLevel::Patch => {
                 next_version.patch += 1;
@@ -104,6 +108,7 @@ pub fn bump_in_file(
     version_prefix: &str,
     file_path: &Path,
 ) -> Result<()> {
+    info!("Updating version in '{}'", file_path.to_string_lossy());
     let contents = fs::read_to_string(file_path)?;
 
     let re = Regex::new(&format!("{}{}", version_prefix, current_version)).unwrap();

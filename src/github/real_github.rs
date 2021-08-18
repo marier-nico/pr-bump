@@ -3,6 +3,7 @@ use crate::{PullRequest, Release};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use eyre::{eyre, Context, Result};
+use log::info;
 use octocrab::{params::State, Octocrab};
 use std::sync::Arc;
 
@@ -53,7 +54,14 @@ impl GitHubOperations for GitHub {
 
         let eligible = pulls
             .into_iter()
-            .filter(move |pr| pr.merged_at.is_some() && &pr.merged_at.unwrap() > merged_after)
+            .filter(move |pr| {
+                info!(
+                    "📝 #{} - {} (merged {:?})",
+                    pr.number, pr.title, pr.merged_at
+                );
+
+                pr.merged_at.is_some() && &pr.merged_at.unwrap() > merged_after
+            })
             .filter(|pr| {
                 let pr_base = pr.base.label.split(':').last().unwrap_or_else(|| {
                     panic!("Unexpected format for PR base: '{}'", pr.base.label)
@@ -80,6 +88,7 @@ impl GitHubOperations for GitHub {
     }
 
     async fn get_latest_release(&self) -> Result<Release> {
+        info!("Querying GitHub for the latest release");
         let latest_release = self
             .octocrab
             .repos(&self.owner, &self.repo)
@@ -89,7 +98,11 @@ impl GitHubOperations for GitHub {
 
         let simplified = match latest_release {
             Ok(rel) => match rel.created_at {
-                Some(created_at) => Release::new(rel.tag_name, created_at),
+                Some(created_at) => {
+                    info!("Found latest release (tag: {})", rel.tag_name);
+
+                    Release::new(rel.tag_name, created_at)
+                }
                 None => return Err(eyre!("The latest release seems to have no creation date")),
             },
             Err(e) => match GitHubError::from(e) {

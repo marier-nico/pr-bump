@@ -5,6 +5,7 @@ use std::{
 };
 
 use eyre::Context;
+use log::info;
 use pr_bump_lib::BumpRules;
 use serde::Deserialize;
 
@@ -88,6 +89,7 @@ impl TryFrom<ConfigFile<'_>> for PrBumpConfig {
     type Error = eyre::Error;
 
     fn try_from(config: ConfigFile) -> Result<Self, Self::Error> {
+        info!("Trying to read config file '{}'", config.to_string_lossy());
         let mut config_content = fs::read_to_string(config).wrap_err(format!(
             "Could not read configuration at '{}'",
             config.to_string_lossy()
@@ -95,6 +97,7 @@ impl TryFrom<ConfigFile<'_>> for PrBumpConfig {
 
         config_content.retain(|c| !c.is_control());
 
+        info!("Parsing configuration file");
         let deserialized_config = serde_json::from_str(&config_content)?;
 
         Ok(deserialized_config)
