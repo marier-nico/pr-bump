@@ -1,15 +1,16 @@
 use std::convert::TryFrom;
 
+use config::{actions_config::ActionConfig, pr_bump_config::PrBumpConfig};
 use eyre::Result;
 use pr_bump_lib::{get_latest_release, get_next_version, get_pulls, update_file, GitHub};
 
-use crate::{actions_config::ActionConfig, pr_bump_config::PrBumpConfig};
-mod actions_config;
-mod pr_bump_config;
+mod config;
 
 // TODO:
 // - Add docs to relevant public functions
-// - Add printing or logs to give info on the action execution
+// - Add printing or logs to give info on the action execution (print to stdout)
+//   - Make nice sections which collapse correctly like (https://github.com/marketplace/actions/release-changelog-builder)
+//   - How to log: (https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions)
 // - Make sure the repo defines a valid action (https://docs.github.com/en/actions/creating-actions/creating-a-docker-container-action)
 //   - Create the config file, the inputs, etc.
 // - Make the README up to stuff, list all the inputs and outputs
