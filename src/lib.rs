@@ -11,6 +11,10 @@ use semver::Version;
 mod bump_version;
 mod github;
 
+/// Fetch the latest release from GitHub
+///
+/// If no releases are found, the default is to return a release with the version 0.1.0,
+/// with a creation date far into the past.
 pub async fn get_latest_release(github: &GitHub) -> Result<Release>
 where
     GitHub: GitHubOperations,
@@ -21,6 +25,13 @@ where
         .wrap_err("Could not find latest release in GitHub")
 }
 
+/// Fetch closed pull requests from GitHub
+///
+/// # Arguments
+///
+/// * `github` - Any type implementing the `GitHubOperations` trait
+/// * `bases` - Only get pull requests that were merged into those bases (`None` means get all PRs)
+/// * `merged_after` - Only get pull requests that have been merged after this date
 pub async fn get_pulls<GitHub, Branch, PRs>(
     github: &GitHub,
     bases: Option<&Vec<Branch>>,
@@ -37,6 +48,10 @@ where
         .wrap_err("Could not list pull requests in GitHub")
 }
 
+/// Calculate the next version for a project
+///
+/// Based on the current version, some rules for bumping versions, and pull requests, find the next
+/// version for the project.
 pub fn get_next_version(
     current_version: &Version,
     bump_rules: &BumpRules,
