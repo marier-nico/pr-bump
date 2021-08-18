@@ -11,13 +11,6 @@ use crate::actions_tools::set_output;
 mod actions_tools;
 mod config;
 
-// TODO:
-// - Add printing or logs to give info on the action execution (print to stdout)
-//   - Make nice sections which collapse correctly like (https://github.com/marketplace/actions/release-changelog-builder)
-//   - How to log: (https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions)
-// - hook up action outputs with those defined in `action.yml`
-// - Make sure everything here is done https://docs.github.com/en/actions/creating-actions/creating-a-docker-container-action#introduction
-
 fn setup_logging() {
     env_logger::Builder::from_default_env()
         .format(|f, record| match record.level() {
@@ -93,7 +86,7 @@ async fn run_action() -> Result<()> {
         set_output("has_bump", "false");
     } else {
         info!(
-            "✅ Done! Performed a version bump: {} → {}",
+            "✅ Done! Performed a version bump: {} ➡ {}",
             &latest.get_version().unwrap(),
             &next_version
         );
