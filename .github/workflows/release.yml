@@ -9,6 +9,8 @@ jobs:
     name: Create release
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Bump Version
         uses: ./
