@@ -1,0 +1,19 @@
+on:
+  push:
+    branches:
+      - release
+
+jobs:
+  release:
+    runs-on: ubuntu-20.04
+    name: Create release
+    steps:
+      - uses: actions/checkout@v2
+      - name: Bump Version
+        uses: ./
+        id: bump
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      - run: "echo Previous version: ${{ steps.bump.outputs.previous_version }}"
+      - run: "echo Next version: ${{ steps.bump.outputs.next_version }}"
+      - run: "echo Has bump: ${{ steps.bump.outputs.has_bump }}"
