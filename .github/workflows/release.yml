@@ -9,11 +9,43 @@ jobs:
     name: Create release
     steps:
       - uses: actions/checkout@v2
+
       - name: Bump Version
         uses: ./
         id: bump
+        with:
+          configuration: ".github/workflows/release_config.json"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-      - run: "echo Previous version: ${{ steps.bump.outputs.previous_version }}"
-      - run: "echo Next version: ${{ steps.bump.outputs.next_version }}"
-      - run: "echo Has bump: ${{ steps.bump.outputs.has_bump }}"
+
+      - name: Build Changelog
+        uses: mikepenz/release-changelog-builder-action@v1
+        id: changelog
+        with:
+          configuration: ".github/workflows/release_config.json"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: "${{ steps.changelog.outputs.changelog }}"
+          name: "v${{ steps.bump.outputs.next_version }}"
+          tag_name: "v${{ steps.bump.outputs.next_version }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Bump PR
+        uses: peter-evans/create-pull-request@v3
+        with:
+          commit-message: "build(version): update version to ${{ steps.bump.outputs.next_version }}"
+          committer: GitHub Actions <actions@github.com>
+          author: GitHub Actions <actions@github.com>
+          branch: build/bump-to-${{ steps.bump.outputs.next_version }}
+          delete-branch: true
+          base: main
+          title: Bump version to ${{ steps.bump.outputs.next_version }}
+          body: ""
+          labels: "no changelog"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
