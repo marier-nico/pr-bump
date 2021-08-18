@@ -5,12 +5,12 @@ branding:
   color: "green"
 inputs:
   configuration:
-    description: "Relative path to the configuration file for pr-bump"
+    description: "Relative path from the repo's root to the json configuration file for the action"
     required: false
 outputs:
-  previous-version:
-    description: "The repository's latest version before the bump"
-  new-version:
+  previous_version:
+    description: "The semver version number for the previous version of the repo"
+  next_version:
     description: "The reporitosy's new version after the bump"
 runs:
   using: 'docker'
