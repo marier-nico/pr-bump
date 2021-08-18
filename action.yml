@@ -1,0 +1,19 @@
+name: "PR Bump"
+description: "Bump versions based on PR labels and GitHub releases"
+branding:
+  icon: "target"
+  color: "green"
+inputs:
+  configuration:
+    description: "Relative path from the repo's root to the json configuration file for the action"
+    required: false
+outputs:
+  previous_version:
+    description: "The semver version number for the previous version of the repo"
+  next_version:
+    description: "The reporitosy's new version after the bump"
+  has_bump:
+    description: "Whether or not the version was bumped"
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

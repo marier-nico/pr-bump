@@ -12,6 +12,7 @@ repos:
       - id: mixed-line-ending
       - id: no-commit-to-branch
       - id: trailing-whitespace
+        exclude: \.rs$
   - repo: https://github.com/doublify/pre-commit-rust
     rev: v1.0
     hooks:

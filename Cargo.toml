@@ -10,8 +10,28 @@ repository = "https://github.com/marier-nico/pr-bump"
 readme = "README.md"
 keywords = ["github", "github-action", "ci"]
 
+[lib]
+name = "pr_bump_lib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "pr_bump_bin"
+path = "src/main.rs"
+
 [dependencies]
-octocrab = "0.9"
+async-trait = "0.1"
+chrono = "0.4"
+dotenv = "0.15"
+env_logger = "0.9"
+eyre = "0.6"
+log = "0.4"
+octocrab = "0.12"
 regex = "1"
 semver = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 tokio = { version = "1", features = ["full"] }
+
+[dev-dependencies]
+serial_test = "0.5"
+tempfile = "3"

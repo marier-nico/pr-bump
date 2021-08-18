@@ -1,0 +1,12 @@
+{
+    "categories": [
+        {
+            "labels": ["your-test-label"],
+            "semver_part": "patch"
+        },
+        {
+            "labels": ["your-feature-label"],
+            "semver_part": "minor"
+        }
+    ]
+}
