@@ -1,11 +1,13 @@
+use log::info;
+
 pub fn set_output(name: &str, value: &str) {
-    println!("::set-output name={}::{}", name, value);
+    info!("::set-output name={}::{}", name, value);
 }
 
 pub fn group_lines(name: &str) {
-    println!("::group::{}", name);
+    info!("::group::{}", name);
 }
 
 pub fn close_group() {
-    println!("::endgroup::");
+    info!("::endgroup::");
 }
