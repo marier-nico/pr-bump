@@ -12,6 +12,8 @@ outputs:
     description: "The semver version number for the previous version of the repo"
   next_version:
     description: "The reporitosy's new version after the bump"
+  has_bump:
+    description: "Whether or not the version was bumped"
 runs:
   using: 'docker'
   image: 'Dockerfile'

@@ -6,6 +6,8 @@ use pr_bump_lib::{get_latest_release, get_next_version, get_pulls, update_file, 
 use std::convert::TryFrom;
 use std::io::Write;
 
+use crate::actions_tools::set_output;
+
 mod actions_tools;
 mod config;
 
@@ -88,13 +90,21 @@ async fn run_action() -> Result<()> {
             "✅ Done! Version did not change (current: {})",
             &next_version
         );
+        set_output("has_bump", "false");
     } else {
         info!(
             "✅ Done! Performed a version bump: {} → {}",
             &latest.get_version().unwrap(),
             &next_version
         );
+        set_output("has_bump", "true");
     }
+
+    set_output(
+        "previous_version",
+        &latest.get_version().unwrap().to_string(),
+    );
+    set_output("next_version", &next_version.to_string());
 
     Ok(())
 }

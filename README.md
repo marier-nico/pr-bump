@@ -67,6 +67,7 @@ You can do this by using the `actions/checkout@v2` action.
 |--------------------|--------------|----------------------------------------------------------------|
 | `previous_version` | Yes          | The semver version number for the previous version of the repo |
 | `next_version`     | Yes          | The semver version number after the version bump               |
+| `has_bump`         | Yes          | Whether or not the version was bumped                          |
 
 🔒 For private repos, you need to set the `GITHUB_TOKEN` environment variable.
 
