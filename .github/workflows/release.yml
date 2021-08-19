@@ -18,23 +18,31 @@ jobs:
         with:
           configuration: ".github/workflows/release_config.json"
         env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Version Tag
+        uses: mathieudutour/github-tag-action@v5.6
+        with:
+          tag_prefix: v
+          custom_tag: ${{ steps.bump.outputs.next_version }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Changelog
         uses: mikepenz/release-changelog-builder-action@v1
         id: changelog
         with:
-          fromTag: "v${{ steps.bump.outputs.previous_version }}"
           configuration: ".github/workflows/release_config.json"
+          fromTag: ${{ steps.bump.outputs.previous_version }}
+          toTag: ${{ steps.bump.outputs.next_version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          body: "${{ steps.changelog.outputs.changelog }}"
-          name: "v${{ steps.bump.outputs.next_version }}"
-          tag_name: "v${{ steps.bump.outputs.next_version }}"
+          body: ${{ steps.changelog.outputs.changelog }}
+          name: v${{ steps.bump.outputs.next_version }}
+          tag_name: v${{ steps.bump.outputs.next_version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
