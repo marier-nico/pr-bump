@@ -24,6 +24,7 @@ jobs:
         uses: mikepenz/release-changelog-builder-action@v1
         id: changelog
         with:
+          fromTag: "v${{ steps.bump.outputs.previous_version }}"
           configuration: ".github/workflows/release_config.json"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
