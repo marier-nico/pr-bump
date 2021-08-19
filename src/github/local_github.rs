@@ -37,20 +37,34 @@ impl Default for LocalGitHub {
 impl GitHubOperations for LocalGitHub {
     type PullIter = Box<dyn Iterator<Item = PullRequest>>;
 
-    async fn get_pulls<'a, Branch>(
+    async fn get_pulls<'a, Branch, Label>(
         &self,
         _base: Option<impl Iterator<Item = Branch> + 'async_trait>,
+        ignored_labels: &[Label],
         merged_after: &DateTime<Utc>,
     ) -> Result<Self::PullIter>
     where
         Branch: AsRef<str>,
+        Label: AsRef<str>,
     {
         let merged_after = *merged_after; // Copy
+        let ignored_labels: Vec<String> = ignored_labels
+            .iter()
+            .map(|l| l.as_ref().to_string())
+            .collect();
+
         Ok(Box::new(
             self.pulls
                 .clone()
                 .into_iter()
-                .filter(move |pr| pr.merged_at.unwrap() > merged_after),
+                .filter(move |pr| pr.merged_at.unwrap() > merged_after)
+                .filter(move |pr| {
+                    pr.labels.iter().all(|label| {
+                        !ignored_labels
+                            .iter()
+                            .any(|ignored_label| label == ignored_label)
+                    })
+                }),
         ))
     }
 

@@ -49,9 +49,11 @@ async fn run_action() -> Result<()> {
     close_group();
 
     group_lines("📜  Reading pull requests");
+    let ignored_labels = pr_bump_config.ignore_labels.clone();
     let pulls = get_pulls(
         &github,
         pr_bump_config.base_branches.as_ref(),
+        ignored_labels.unwrap_or_default(),
         &latest.created_at,
     )
     .await?;

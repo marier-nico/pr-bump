@@ -50,7 +50,8 @@ The action does the following, in that order :
       "labels": ["major", "breaking", "milestone"],
       "semver_part": "major"
     }
-  ]
+  ],
+  "ignore_labels": ["no release"]
 }
 ```
 
@@ -100,7 +101,8 @@ override the default for that specific setting. The others will still use the de
       "labels": ["breaking", "major"],
       "semver_part": "major"
     }
-  ]
+  ],
+  "ignore_labels": []
 }
 ```
 
@@ -142,6 +144,12 @@ override the default for that specific setting. The others will still use the de
         "semver_part": "patch"
       }
     ]
+  }
+  ```
+- `ignore_labels`: If there is an intersection between the labels on a pull request and the labels in this configuration value, the pull request is ignored.
+  ```json
+  {
+    "ignore_labels": ["no release", "ignored"]
   }
   ```
 

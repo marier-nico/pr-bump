@@ -35,13 +35,15 @@ impl GitHub {
 impl GitHubOperations for GitHub {
     type PullIter = Box<dyn Iterator<Item = PullRequest>>;
 
-    async fn get_pulls<'a, Branch>(
+    async fn get_pulls<'a, Branch, Label>(
         &self,
         mut bases: Option<impl Iterator<Item = Branch> + 'async_trait>,
+        ignored_labels: &[Label],
         merged_after: &DateTime<Utc>,
     ) -> Result<Self::PullIter>
     where
         Branch: AsRef<str>,
+        Label: AsRef<str>,
     {
         let pulls = self
             .octocrab
@@ -54,14 +56,28 @@ impl GitHubOperations for GitHub {
 
         let eligible = pulls
             .into_iter()
-            .filter(move |pr| {
-                info!(
-                    "📝 #{} - {} (merged {:?})",
-                    pr.number, pr.title, pr.merged_at
-                );
+            .filter(|pr| {
+                let ignored = match &pr.labels {
+                    Some(pr_labels) => pr_labels.iter().all(|label| {
+                        ignored_labels
+                            .iter()
+                            .any(|ignored_label| label.name == ignored_label.as_ref())
+                    }),
+                    None => true, // No labels on the PR means we can ignore it
+                };
 
-                pr.merged_at.is_some() && &pr.merged_at.unwrap() > merged_after
+                if ignored {
+                    info!("🗑️  #{} - {} (ignored)", pr.number, pr.title);
+                } else {
+                    info!(
+                        "📝 #{} - {} (merged {:?})",
+                        pr.number, pr.title, pr.merged_at
+                    );
+                }
+
+                !ignored
             })
+            .filter(move |pr| pr.merged_at.is_some() && &pr.merged_at.unwrap() > merged_after)
             .filter(|pr| {
                 let pr_base = pr.base.label.split(':').last().unwrap_or_else(|| {
                     panic!("Unexpected format for PR base: '{}'", pr.base.label)

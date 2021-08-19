@@ -31,10 +31,12 @@ where
 ///
 /// * `github` - Any type implementing the `GitHubOperations` trait
 /// * `bases` - Only get pull requests that were merged into those bases (`None` means get all PRs)
+/// * `ignored_labels` - Do not get pull requests that have one of those labels on it
 /// * `merged_after` - Only get pull requests that have been merged after this date
 pub async fn get_pulls<GitHub, Branch, PRs>(
     github: &GitHub,
     bases: Option<&Vec<Branch>>,
+    ignored_labels: Vec<String>,
     merged_after: &DateTime<Utc>,
 ) -> Result<PRs>
 where
@@ -43,7 +45,11 @@ where
     PRs: Iterator<Item = PullRequest>,
 {
     github
-        .get_pulls(bases.map(|bases| bases.clone().into_iter()), merged_after)
+        .get_pulls(
+            bases.map(|bases| bases.clone().into_iter()),
+            &ignored_labels,
+            merged_after,
+        )
         .await
         .wrap_err("Could not list pull requests in GitHub")
 }
