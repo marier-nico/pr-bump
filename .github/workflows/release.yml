@@ -22,11 +22,13 @@ jobs:
 
       - name: Find Head
         id: head
+        if: ${{ steps.bump.outputs.has_bump == "true" }}
         run: echo "::set-output name=head::$(git rev-parse HEAD)"
 
       - name: Build Changelog
         uses: mikepenz/release-changelog-builder-action@v1
         id: changelog
+        if: ${{ steps.bump.outputs.has_bump == "true" }}
         with:
           configuration: ".github/workflows/release_config.json"
           fromTag: v${{ steps.bump.outputs.previous_version }}
@@ -36,6 +38,7 @@ jobs:
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
+        if: ${{ steps.bump.outputs.has_bump == "true" }}
         with:
           body: ${{ steps.changelog.outputs.changelog }}
           name: v${{ steps.bump.outputs.next_version }}
@@ -45,6 +48,7 @@ jobs:
 
       - name: Create Bump PR
         uses: peter-evans/create-pull-request@v3
+        if: ${{ steps.bump.outputs.has_bump == "true" }}
         with:
           commit-message: "build(version): update version to ${{ steps.bump.outputs.next_version }}"
           committer: GitHub Actions <actions@github.com>
