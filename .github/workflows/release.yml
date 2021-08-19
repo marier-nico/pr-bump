@@ -58,6 +58,6 @@ jobs:
           base: main
           title: Bump version to ${{ steps.bump.outputs.next_version }}
           body: ""
-          labels: "no changelog"
+          labels: "no release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
