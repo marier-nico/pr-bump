@@ -25,6 +25,7 @@ jobs:
         with:
           tag_prefix: v
           custom_tag: ${{ steps.bump.outputs.next_version }}
+          release_branches: release
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Changelog
