@@ -33,8 +33,8 @@ jobs:
         id: changelog
         with:
           configuration: ".github/workflows/release_config.json"
-          fromTag: ${{ steps.bump.outputs.previous_version }}
-          toTag: ${{ steps.bump.outputs.next_version }}
+          fromTag: v${{ steps.bump.outputs.previous_version }}
+          toTag: v${{ steps.bump.outputs.next_version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
