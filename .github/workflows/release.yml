@@ -20,13 +20,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create Version Tag
-        uses: mathieudutour/github-tag-action@v5.6
-        with:
-          tag_prefix: v
-          custom_tag: ${{ steps.bump.outputs.next_version }}
-          release_branches: release
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Find Head
+        id: head
+        run: echo "::set-output name=head::$(git rev-parse HEAD)"
 
       - name: Build Changelog
         uses: mikepenz/release-changelog-builder-action@v1
@@ -34,7 +30,7 @@ jobs:
         with:
           configuration: ".github/workflows/release_config.json"
           fromTag: v${{ steps.bump.outputs.previous_version }}
-          toTag: v${{ steps.bump.outputs.next_version }}
+          toTag: ${{ steps.head.outputs.head }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
