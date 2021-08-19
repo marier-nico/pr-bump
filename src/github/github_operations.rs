@@ -7,13 +7,15 @@ use semver::Version;
 pub trait GitHubOperations {
     type PullIter: Iterator<Item = PullRequest>;
 
-    async fn get_pulls<'a, Branch>(
+    async fn get_pulls<'a, Branch, Label>(
         &self,
         bases: Option<impl Iterator<Item = Branch> + 'async_trait>,
+        ignore_labels: &[Label],
         merged_after: &DateTime<Utc>,
     ) -> Result<Self::PullIter>
     where
-        Branch: AsRef<str>;
+        Branch: AsRef<str>,
+        Label: AsRef<str>;
     async fn get_latest_release(&self) -> Result<Release>;
 }
 

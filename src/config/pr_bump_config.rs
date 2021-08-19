@@ -48,6 +48,7 @@ pub struct PrBumpConfig {
     pub base_branches: Option<Vec<String>>,
     pub bump_files: Option<Vec<BumpFile>>,
     pub categories: Option<Vec<Category>>,
+    pub ignore_labels: Option<Vec<Label>>,
 }
 
 impl PrBumpConfig {
@@ -62,6 +63,10 @@ impl PrBumpConfig {
 
         if self.categories.is_none() {
             self.categories = other.categories
+        }
+
+        if self.ignore_labels.is_none() {
+            self.ignore_labels = other.ignore_labels
         }
 
         self
@@ -134,6 +139,7 @@ impl Default for PrBumpConfig {
                     SemverPart::Major,
                 ),
             ]),
+            ignore_labels: Some(Vec::new()),
         }
     }
 }
